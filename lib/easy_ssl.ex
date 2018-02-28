@@ -281,7 +281,7 @@ defmodule EasySSL do
                     {:uniformResourceIdentifier, identifier} -> ["URI:" <> (identifier |> to_string) | san_list]
                     {:rfc822Name, identifier} -> ["RFC 822Name:" <> (identifier |> to_string) | san_list]
                     {:directoryName, _sequence} -> san_list
-                    {:iPAddress, ip} -> ["IP:" <> (ip |> to_string) | san_list]
+                    {:iPAddress, ip} -> ["IP:" <> (ip |> ip_to_string) | san_list]
 
                     _ ->
                       raise("Unhandled SAN entry type #{inspect entry}")
@@ -301,7 +301,7 @@ defmodule EasySSL do
                     {:dNSName, dns_name} -> ["DNS:" <> (dns_name |> to_string) | issuer_list]
                     {:rfc822Name, identifier} -> ["RFC 822Name:" <> (identifier |> to_string) | issuer_list]
                     {:directoryName, _sequence} -> issuer_list
-                    {:iPAddress, ip} -> ["IP:" <> (ip |> to_string) | issuer_list]
+                    {:iPAddress, ip} -> ["IP:" <> (ip |> ip_to_string) | issuer_list]
                     _ ->
                       raise("Unhandled IAN entry type #{inspect entry}")
                   end
@@ -427,6 +427,13 @@ defmodule EasySSL do
           end
         end)
     end
+  end
+
+  defp ip_to_string(ip) do
+    ip
+      |> :binary.bin_to_list
+      |> Enum.map(&to_string/1)
+      |> Enum.join(".")
   end
 
   defp join_usage_types(key_usage) do
