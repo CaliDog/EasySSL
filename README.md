@@ -20,7 +20,7 @@ Hex docs can be found at [https://hexdocs.pm/easy_ssl](https://hexdocs.pm/easy_s
 
 We aim to make the usage as stupid simple as possible, so there are only 2 exported functions (for now), both of which return the following data structure:
 
-```
+```elixir
 %{
   extensions: %{
     authorityInfoAccess: "CA Issuers - URI:http://certificates.godaddy.com/repository/gd_intermediate.crt\nOCSP - URI:http://ocsp.godaddy.com/\n",
@@ -53,7 +53,7 @@ We aim to make the usage as stupid simple as possible, so there are only 2 expor
 
 Parses a DER-encoded X509 certificate
 
-```
+```elixir
 iex(1)> File.read!("some_cert.der") |> EasySSL.parse_der
 %{
   extensions: %{
@@ -74,7 +74,7 @@ iex(1)> File.read!("some_cert.der") |> EasySSL.parse_der
 
 Parses a PEM-encoded X509 certificate
 
-```
+```elixir
 iex(1)> File.read!("some_cert.pem") |> EasySSL.parse_pem
 %{
   extensions: %{
