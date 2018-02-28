@@ -9,7 +9,9 @@ defmodule EasySSL.MixProject do
       description: "SSL/X509 parsing for humans.",
       deps: deps(),
       test_coverage: [tool: ExCoveralls],
-      preferred_cli_env: ["coveralls": :test, "coveralls.detail": :test, "coveralls.post": :test, "coveralls.html": :test]
+      preferred_cli_env: ["coveralls": :test, "coveralls.detail": :test, "coveralls.post": :test, "coveralls.html": :test],
+      source_url: "https://github.com/CaliDog/EasySSL",
+      package: package()
     ]
   end
 
@@ -21,7 +23,20 @@ defmodule EasySSL.MixProject do
 
   defp deps do
     [
-      {:excoveralls, "~> 0.8", only: :test}
+      {:excoveralls, "~> 0.8", only: :test},
+      {:ex_doc, "~> 0.16", only: :dev, runtime: false},
+      {:poison, "~> 2.0", only: :test},
+    ]
+  end
+
+  defp package() do
+    [
+      name: "easy_ssl",
+      # These are the default files included in the package
+      files: ["lib", "mix.exs", "README.md"],
+      maintainers: ["Ryan Sears"],
+      licenses: ["MIT"],
+      links: %{"GitHub" => "https://github.com/CaliDog/EasySSL"}
     ]
   end
 end

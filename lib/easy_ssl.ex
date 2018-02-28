@@ -1,46 +1,10 @@
 defmodule EasySSL do
   @moduledoc """
-  EasySSL is a wrapper around Erlang's :public_key module along with proper parsing and matching of things like Subjects
-  and X509v3 extensions.
+  EasySSL is a wrapper around Erlang's `:public_key` module to make it far more friendly. It automatically
+  processes OIDs for most X509v3 extensions and subject fields.
+
+  There are really only two functions of note - `parse_der` and `parse_pem`, which should have obvious functions.
   """
-
-  @doc """
-  EasySSL is a wrapper around Erlang's :public_key module along with proper parsing and matching of things like Subjects
-  and X509v3 extensions.
-
-  ## Examples
-
-      # Pass in a binary (from Base.decode64, or some other source)
-      iex> EasySSL.parse_der(<<...>>)
-      %{
-        extensions: %{
-          authorityInfoAccess: "CA Issuers - URI:http://certificates.godaddy.com/repository/gd_intermediate.crt\nOCSP - URI:http://ocsp.godaddy.com/\n",
-          authorityKeyIdentifier: "keyid:FD:AC:61:32:93:6C:45:D6:E2:EE:85:5F:9A:BA:E7:76:99:68:CC:E7\n",
-          basicConstraints: "CA:FALSE",
-          certificatePolicies: "Policy: 2.16.840.1.114413.1.7.23.1\n  CPS: http://certificates.godaddy.com/repository/",
-          crlDistributionPoints: "Full Name:\n URI:http://crl.godaddy.com/gds1-90.crl",
-          extendedKeyUsage: "TLS Web server authentication, TLS Web client authentication",
-          keyUsage: "Digital Signature, Key Encipherment",
-          subjectAltName: "DNS:acaline.com, DNS:www.acaline.com",
-          subjectKeyIdentifier: "E6:61:14:4E:5A:4B:51:0C:4E:6C:5E:3C:79:61:65:D4:BD:64:94:BE"
-        },
-        fingerprint: "FA:BE:B5:9B:ED:C2:2B:42:7E:B1:45:C8:9A:8A:73:16:4A:A0:10:09",
-        not_after: 1398523877,
-        not_before: 1366987877,
-        serial_number: "27ACAE30B9F323",
-        subject: %{
-          C: nil,
-          CN: "www.acaline.com",
-          L: nil,
-          O: nil,
-          OU: "Domain Control Validated",
-          ST: nil,
-          aggregated: "/CN=www.acaline.com/OU=Domain Control Validated"
-        }
-      }
-
-  """
-
   @pubkey_schema Record.extract_all(from_lib: "public_key/include/OTP-PUB-KEY.hrl")
 
   @extended_key_usages %{
@@ -60,6 +24,40 @@ defmodule EasySSL do
     {1,3,6,1,5,5,7,48,2} => "CA Issuers - URI",
   }
 
+  @doc """
+  Takes in a binary (`<<...>>`) and returns a map of the parsed certificate
+
+  ## Examples
+
+      # Pass in a binary (from Base.decode64, or some other source)
+      iex(1)> EasySSL.parse_der(<<...>>)
+      %{
+        extensions: %{
+          authorityInfoAccess: "CA Issuers - URI:http://certificates.godaddy.com/repository/gd_intermediate.crt\\nOCSP - URI:http://ocsp.godaddy.com/\\n",
+          authorityKeyIdentifier: "keyid:FD:AC:61:32:93:6C:45:D6:E2:EE:85:5F:9A:BA:E7:76:99:68:CC:E7\\n",
+          basicConstraints: "CA:FALSE",
+          certificatePolicies: "Policy: 2.16.840.1.114413.1.7.23.1\\n  CPS: http://certificates.godaddy.com/repository/",
+          crlDistributionPoints: "Full Name:\\n URI:http://crl.godaddy.com/gds1-90.crl",
+          extendedKeyUsage: "TLS Web server authentication, TLS Web client authentication",
+          keyUsage: "Digital Signature, Key Encipherment",
+          subjectAltName: "DNS:acaline.com, DNS:www.acaline.com",
+          subjectKeyIdentifier: "E6:61:14:4E:5A:4B:51:0C:4E:6C:5E:3C:79:61:65:D4:BD:64:94:BE"
+        },
+        fingerprint: "FA:BE:B5:9B:ED:C2:2B:42:7E:B1:45:C8:9A:8A:73:16:4A:A0:10:09",
+        not_after: 1398523877,
+        not_before: 1366987877,
+        serial_number: "27ACAE30B9F323",
+        subject: %{
+          C: nil,
+          CN: "www.acaline.com",
+          L: nil,
+          O: nil,
+          OU: "Domain Control Validated",
+          ST: nil,
+          aggregated: "/CN=www.acaline.com/OU=Domain Control Validated"
+        }
+      }
+  """
   def parse_der(certificate_der) when is_binary(certificate_der) do
     cert = :public_key.pkix_decode_cert(certificate_der, :otp) |> get_field(:tbsCertificate)
 
@@ -71,6 +69,40 @@ defmodule EasySSL do
       |> Map.merge(parse_expiry(cert))
   end
 
+  @doc """
+  Takes in a string (or charlist) and returns a map of the parsed certificate
+
+  ## Examples
+
+      # Pass in a binary (from Base.decode64, or some other source)
+      iex(1)> EasySSL.parse_pem("-----BEGIN CERTIFICATE-----\\nMII...")
+      %{
+        extensions: %{
+          authorityInfoAccess: "CA Issuers - URI:http://certificates.godaddy.com/repository/gd_intermediate.crt\\nOCSP - URI:http://ocsp.godaddy.com/\\n",
+          authorityKeyIdentifier: "keyid:FD:AC:61:32:93:6C:45:D6:E2:EE:85:5F:9A:BA:E7:76:99:68:CC:E7\\n",
+          basicConstraints: "CA:FALSE",
+          certificatePolicies: "Policy: 2.16.840.1.114413.1.7.23.1\\n  CPS: http://certificates.godaddy.com/repository/",
+          crlDistributionPoints: "Full Name:\\n URI:http://crl.godaddy.com/gds1-90.crl",
+          extendedKeyUsage: "TLS Web server authentication, TLS Web client authentication",
+          keyUsage: "Digital Signature, Key Encipherment",
+          subjectAltName: "DNS:acaline.com, DNS:www.acaline.com",
+          subjectKeyIdentifier: "E6:61:14:4E:5A:4B:51:0C:4E:6C:5E:3C:79:61:65:D4:BD:64:94:BE"
+        },
+        fingerprint: "FA:BE:B5:9B:ED:C2:2B:42:7E:B1:45:C8:9A:8A:73:16:4A:A0:10:09",
+        not_after: 1398523877,
+        not_before: 1366987877,
+        serial_number: "27ACAE30B9F323",
+        subject: %{
+          C: nil,
+          CN: "www.acaline.com",
+          L: nil,
+          O: nil,
+          OU: "Domain Control Validated",
+          ST: nil,
+          aggregated: "/CN=www.acaline.com/OU=Domain Control Validated"
+        }
+      }
+"""
   def parse_pem(cert_charlist) when is_list(cert_charlist) do parse_pem(cert_charlist |> to_string) end
   def parse_pem(cert_pem) do
     cert_regex = ~r/^\-{5}BEGIN\sCERTIFICATE\-{5}\n(?<certificate>[^\-]+)\-{5}END\sCERTIFICATE\-{5}/
@@ -174,13 +206,13 @@ defmodule EasySSL do
 
   defp aggregate_subject(subject) do
     subject
-    # Filter out empty values
-    |> Enum.filter(fn {_, v} -> v != nil end)
-      # Turn everything in to a string so C=blah.com
-    |> Enum.map(fn {k, v} -> (k |> to_string) <> "=" <> (v |> to_string) end)
-      # Add a buffer to the front to
-    |> Enum.join("/")
-    |> String.replace_prefix("", "/")
+      # Filter out empty values
+      |> Enum.filter(fn {_, v} -> v != nil end)
+        # Turn everything in to a string so C=blah.com
+      |> Enum.map(fn {k, v} -> (k |> to_string) <> "=" <> (v |> to_string) end)
+        # Add a buffer to the front to
+      |> Enum.join("/")
+      |> String.replace_prefix("", "/")
   end
 
   defp parse_extensions(cert) do
