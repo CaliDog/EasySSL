@@ -280,8 +280,11 @@ defmodule EasySSL do
                     {:dNSName, dns_name} -> ["DNS:" <> (dns_name |> to_string) | san_list]
                     {:uniformResourceIdentifier, identifier} -> ["URI:" <> (identifier |> to_string) | san_list]
                     {:rfc822Name, identifier} -> ["RFC 822Name:" <> (identifier |> to_string) | san_list]
-                    {:directoryName, _sequence} -> san_list
                     {:iPAddress, ip} -> ["IP:" <> (ip |> ip_to_string) | san_list]
+
+                    # Basically ignore those
+                    {:directoryName, _sequence} -> san_list
+                    {:otherName, other_name} -> san_list
 
                     _ ->
                       raise("Unhandled SAN entry type #{inspect entry}")
@@ -300,8 +303,12 @@ defmodule EasySSL do
                     {:uniformResourceIdentifier, identifier} -> ["URI:" <> (identifier |> to_string) | issuer_list]
                     {:dNSName, dns_name} -> ["DNS:" <> (dns_name |> to_string) | issuer_list]
                     {:rfc822Name, identifier} -> ["RFC 822Name:" <> (identifier |> to_string) | issuer_list]
-                    {:directoryName, _sequence} -> issuer_list
                     {:iPAddress, ip} -> ["IP:" <> (ip |> ip_to_string) | issuer_list]
+
+                    # Ignore these
+                    {:directoryName, _sequence} -> issuer_list
+                    {:otherName, _sequence} -> issuer_list
+
                     _ ->
                       raise("Unhandled IAN entry type #{inspect entry}")
                   end
@@ -381,8 +388,15 @@ defmodule EasySSL do
                             [cps_string | message]
 
                           {:PolicyQualifierInfo, {1, 3, 6, 1, 5, 5, 7, 2, 2}, user_notice_data} ->
-                            <<_::binary-size(6), user_notice::binary>> = user_notice_data
-                            [user_notice |> String.replace_prefix("", "  User Notice: ") | message]
+                            <<_::binary-size(8), user_notice::binary>> = user_notice_data
+
+                            user_notice = user_notice
+                              |> String.codepoints
+                              |> Enum.filter(fn(c) -> String.printable?(c) end)
+                              |> Enum.join("")
+                              |> String.replace_prefix("", "  User Notice: ")
+
+                            [user_notice  | message]
 
                         end
                       end)
