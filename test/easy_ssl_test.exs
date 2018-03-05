@@ -57,4 +57,28 @@ defmodule EasySSLTest do
     assert_has_normal_atom_keys(cert)
   end
 
+  test "parses and adds all domains to the top level leaf node" do
+    cert_bytes = File.read!(@der_cert_dir <> "twitter.com.der")
+
+    serialized_cert = cert_bytes
+      |> EasySSL.parse_der()
+    refute Enum.member?(Map.keys(serialized_cert), :as_der)
+    refute Enum.member?(Map.keys(serialized_cert), :all_domains)
+
+    serialized_cert = cert_bytes
+      |> EasySSL.parse_der(all_domains: true)
+    refute Enum.member?(Map.keys(serialized_cert), :as_der)
+    assert Enum.member?(Map.keys(serialized_cert), :all_domains)
+
+    serialized_cert = cert_bytes
+      |> EasySSL.parse_der(serialize: true)
+    assert Enum.member?(Map.keys(serialized_cert), :as_der)
+    refute Enum.member?(Map.keys(serialized_cert), :all_domains)
+
+    serialized_cert = cert_bytes
+      |> EasySSL.parse_der(serialize: true, all_domains: true)
+    assert Enum.member?(Map.keys(serialized_cert), :as_der)
+    assert Enum.member?(Map.keys(serialized_cert), :all_domains)
+  end
+
 end

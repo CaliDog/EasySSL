@@ -58,15 +58,56 @@ defmodule EasySSL do
         }
       }
   """
-  def parse_der(certificate_der) when is_binary(certificate_der) do
+  def parse_der(certificate_der, opts \\ [all_domains: false, serialize: false]) when is_binary(certificate_der) do
     cert = :public_key.pkix_decode_cert(certificate_der, :otp) |> get_field(:tbsCertificate)
 
-    %{}
+    serialized_certificate = %{}
       |> Map.put(:fingerprint, certificate_der |> fingerprint_cert)
       |> Map.put(:serial_number, cert |> get_field(:serialNumber) |> Integer.to_string(16))
       |> Map.put(:subject, cert |> parse_subject)
       |> Map.put(:extensions, cert |> parse_extensions)
       |> Map.merge(parse_expiry(cert))
+
+    Enum.reduce(opts, serialized_certificate, fn {option, flag}, serialized_certificate ->
+      case option do
+        :all_domains when flag == true ->
+          serialized_certificate
+            |> Map.put(:all_domains, get_all_domain_names(cert, serialized_certificate))
+
+        :serialize when flag == true ->
+          serialized_certificate
+            |> Map.put(:as_der, Base.encode64(certificate_der))
+        _ -> serialized_certificate
+      end
+    end)
+  end
+
+  def get_all_domain_names(cert, serialized_cert) do
+    domain_names = MapSet.new()
+
+    domain_names = case serialized_cert[:subject][:CN] do
+      nil -> domain_names
+      _ -> MapSet.put(domain_names, serialized_cert[:subject][:CN])
+    end
+
+    extensions = cert |> get_field(:extensions)
+
+    extensions
+      |> Enum.reduce(domain_names, fn extension, domain_names ->
+          case extension do
+            {:Extension, {2, 5, 29, 17}, _critical, san_entries} ->
+              san_entries
+                |> Enum.reduce(domain_names, fn entry, names ->
+                  case entry do
+                    {:dNSName, dns_name} -> MapSet.put(names, dns_name |> to_string)
+                    _ -> names
+                  end
+                end)
+            :asn1_NOVALUE -> domain_names
+            _ -> domain_names
+          end
+        end)
+      |> MapSet.to_list
   end
 
   @doc """
@@ -104,7 +145,7 @@ defmodule EasySSL do
       }
 """
   def parse_pem(cert_charlist) when is_list(cert_charlist) do parse_pem(cert_charlist |> to_string) end
-  def parse_pem(cert_pem) do
+  def parse_pem(cert_pem, opts \\ [all_domains: false, return_base64: false]) do
     cert_regex = ~r/^\-{5}BEGIN\sCERTIFICATE\-{5}\n(?<certificate>[^\-]+)\-{5}END\sCERTIFICATE\-{5}/
     match = Regex.named_captures(cert_regex, cert_pem)
 
@@ -115,7 +156,7 @@ defmodule EasySSL do
     match["certificate"]
       |> String.replace("\n", "")
       |> Base.decode64!
-      |> parse_der
+      |> parse_der(opts)
   end
 
   defp get_field(record, field) do
@@ -284,7 +325,7 @@ defmodule EasySSL do
 
                     # Basically ignore those
                     {:directoryName, _sequence} -> san_list
-                    {:otherName, other_name} -> san_list
+                    {:otherName, _sequence} -> san_list
 
                     _ ->
                       raise("Unhandled SAN entry type #{inspect entry}")
