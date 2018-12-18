@@ -172,7 +172,7 @@ defmodule EasySSL do
     :crypto.hash(:sha, certificate)
     |> Base.encode16
     |> String.to_charlist
-    |> Enum.chunk(2)
+    |> Enum.chunk_every(2, 2, :discard)
     |> Enum.join(":")
   end
 
@@ -299,7 +299,7 @@ defmodule EasySSL do
                 subject_key_identifier
                 |> Base.encode16
                 |> String.to_charlist
-                |> Enum.chunk(2)
+                |> Enum.chunk_every(2, 2, :discard)
                 |> Enum.join(":")
               )
 
@@ -456,7 +456,7 @@ defmodule EasySSL do
                     authority_key_identifier
                     |> Base.encode16
                     |> String.to_charlist
-                    |> Enum.chunk(2)
+                    |> Enum.chunk_every(2, 2, :discard)
                     |> Enum.join(":")
                     |> String.replace_prefix("", "keyid:")
                     |> String.replace_suffix("", "\n")
