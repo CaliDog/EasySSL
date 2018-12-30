@@ -1,3 +1,5 @@
+require Logger
+
 defmodule EasySSL do
   @moduledoc """
   EasySSL is a wrapper around Erlang's `:public_key` module to make it far more friendly. It automatically
@@ -150,13 +152,14 @@ defmodule EasySSL do
     match = Regex.named_captures(cert_regex, cert_pem)
 
     if match == nil do
-      raise("Unable to parse pem as certificate!")
-    end
-
-    match["certificate"]
+      {:error, "Unable to parse PEM. Is the certificate well formed?"}
+    else
+      match["certificate"]
       |> String.replace("\n", "")
       |> Base.decode64!
       |> parse_der(opts)
+    end
+
   end
 
   defp get_field(record, field) do
@@ -179,15 +182,19 @@ defmodule EasySSL do
   defp parse_expiry(cert) do
     {:Validity, {:utcTime, not_before }, {:utcTime, not_after}} = cert |> get_field(:validity)
 
-    %{:not_before => not_before |> asn1_to_epoch, :not_after => not_after |> asn1_to_epoch}
+    %{
+      :not_before => not_before |> asn1_to_epoch,
+      :not_after => not_after |> asn1_to_epoch
+    }
   end
 
-  defp asn1_to_epoch(asn1_time) do
+  def asn1_to_epoch(asn1_time) do
     date = case asn1_time |> Enum.chunk_every(2) do
       [year, month, day, hour, minute, second, 'Z'] -> ['20' ++ year, month, day, hour, minute, second]
       [year, month, day, hour, minute, 'Z'] -> ['20' ++ year, month, day, hour, minute, '00']
       _ ->
-        raise("Unhandled ASN1 time structure")
+        Logger.error("Unhandled ASN1 time structure - #{asn1_time}}")
+        nil
     end
 
     date_args = date |> Enum.map(&(to_string(&1) |> String.to_integer))
@@ -195,7 +202,8 @@ defmodule EasySSL do
     case apply(NaiveDateTime, :new, date_args) do
       {:ok, datetime} -> datetime |> DateTime.from_naive!("Etc/UTC") |> DateTime.to_unix
       _ ->
-        raise("Unhandled ASN1 time structure")
+        Logger.error("Unhandled ASN1 time structure - #{date_args}}")
+        nil
     end
   end
 
@@ -241,7 +249,8 @@ defmodule EasySSL do
       {:teletexString, string} -> string
       string when is_list(string) -> string
       _ ->
-        raise("Unhandled subject attribute type #{inspect attribute_value}")
+        Logger.error("Unhandled subject attribute type #{inspect attribute_value}")
+        nil
     end
   end
 
@@ -328,7 +337,8 @@ defmodule EasySSL do
                     {:otherName, _sequence} -> san_list
 
                     _ ->
-                      raise("Unhandled SAN entry type #{inspect entry}")
+                      Logger.error("Unhandled SAN entry type #{inspect entry}")
+                      san_list
                   end
                 end)
                 |> Enum.join(", ")
@@ -351,7 +361,8 @@ defmodule EasySSL do
                     {:otherName, _sequence} -> issuer_list
 
                     _ ->
-                      raise("Unhandled IAN entry type #{inspect entry}")
+                      Logger.error("Unhandled IAN entry type #{inspect entry}")
+                      issuer_list
                   end
                 end)
                 |> Enum.join(", ")
@@ -392,7 +403,8 @@ defmodule EasySSL do
                       |> Enum.reverse()
 
                     _ ->
-                      raise("Unhandled CRL distrobution point #{inspect distro_point}")
+                      Logger.error("Unhandled CRL distrobution point #{inspect distro_point}")
+                      output
                   end
                 end)
                 |> Enum.join("\n")
