@@ -10,7 +10,7 @@ defmodule EasySSL.MixProject do
       description: "SSL/X509 parsing for humans.",
       deps: deps(),
       test_coverage: [tool: ExCoveralls],
-      preferred_cli_env: ["coveralls": :test, "coveralls.detail": :test, "coveralls.post": :test, "coveralls.html": :test],
+      preferred_cli_env: [coveralls: :test, "coveralls.detail": :test, "coveralls.post": :test, "coveralls.html": :test],
       source_url: "https://github.com/CaliDog/EasySSL",
       package: package()
     ]
