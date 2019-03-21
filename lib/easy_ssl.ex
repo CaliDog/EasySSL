@@ -208,6 +208,7 @@ defmodule EasySSL do
     date_args = date |> Enum.map(&(to_string(&1) |> String.to_integer))
 
     case apply(NaiveDateTime, :new, date_args) do
+      {:ok, ~N[9999-12-31 23:59:59]} -> :no_expiration
       {:ok, datetime} -> datetime |> DateTime.from_naive!("Etc/UTC") |> DateTime.to_unix
       _ ->
         Logger.error("Unhandled ASN1 time structure - #{date_args}}")
