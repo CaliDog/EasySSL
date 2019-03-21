@@ -1,8 +1,8 @@
 # EasySSL
 
-Originally this module was part of the [certstream](https://certstream.calidog.io) project, but we decided that it'd be more useful as a stand-alone module to hopefully de-duplicate the annoyances of figuring out how to use Erlang's `:public_key` module to properly parse X509 certificates and coerce things like extensions and subjects to something that more closely resembles certificate parsing in other languages.
+Originally this module was part of the [Certstream](https://certstream.calidog.io) project, but we decided that it'd be more useful as a stand-alone module to hopefully de-duplicate the annoyances of figuring out how to use Erlang's `:public_key` module to properly parse X509 certificates and coerce things like extensions and subjects to something that more closely resembles certificate parsing in other languages.
 
-As a forewarning, this is by no means an all-inclusive library for parsing X509 certificates, it's just what we needed as part of our project, but pull requests are extremely welcome if you notice some breakage or ways to improve!
+As a forewarning, this is by no means an all-inclusive library for parsing X509 certificates, it's just what we needed as part of our project, but pull requests are extremely welcome if you notice some breakage or ways to improve! That being said, it does process millions of certificates per day through Certstream, so we consider it fairly battle tested!
 
 ## Installation
 
