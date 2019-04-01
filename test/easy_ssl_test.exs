@@ -81,4 +81,10 @@ defmodule EasySSLTest do
     assert Enum.member?(Map.keys(serialized_cert), :all_domains)
   end
 
+  test "validity not after the end of year 9999 means no expiration" do
+    cert = File.read!(@pem_cert_dir <> "device-cert.crt") |> EasySSL.parse_pem()
+    assert Map.has_key?(cert, :not_after)
+    assert cert.not_after == :no_expiration
+  end
+
 end

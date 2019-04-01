@@ -180,18 +180,26 @@ defmodule EasySSL do
   end
 
   defp parse_expiry(cert) do
-    {:Validity, {:utcTime, not_before }, {:utcTime, not_after}} = cert |> get_field(:validity)
+    {:Validity, not_before, not_after} = cert |> get_field(:validity)
 
     %{
-      :not_before => not_before |> asn1_to_epoch,
-      :not_after => not_after |> asn1_to_epoch
+      :not_before => not_before |> to_generalized_time |> asn1_to_epoch,
+      :not_after => not_after |> to_generalized_time |> asn1_to_epoch
     }
   end
 
-  def asn1_to_epoch(asn1_time) do
-    date = case asn1_time |> Enum.chunk_every(2) do
-      [year, month, day, hour, minute, second, 'Z'] -> ['20' ++ year, month, day, hour, minute, second]
-      [year, month, day, hour, minute, 'Z'] -> ['20' ++ year, month, day, hour, minute, '00']
+  defp to_generalized_time({:generalTime, time}), do: time
+  defp to_generalized_time({:utcTime, time}) do
+    year = time |> Enum.take(2) |> :string.to_integer()
+    prefix = if year >=  50, do: '19', else: '20'
+    prefix ++ time
+  end
+
+  defp asn1_to_epoch(asn1_time) do
+    {year, rest} = Enum.split(asn1_time, 4)
+    date = case rest |> Enum.chunk_every(2) do
+      [month, day, hour, minute, second, 'Z'] -> [year, month, day, hour, minute, second]
+      [month, day, hour, minute, 'Z'] -> [year, month, day, hour, minute, '00']
       _ ->
         Logger.error("Unhandled ASN1 time structure - #{asn1_time}}")
         nil
@@ -200,6 +208,7 @@ defmodule EasySSL do
     date_args = date |> Enum.map(&(to_string(&1) |> String.to_integer))
 
     case apply(NaiveDateTime, :new, date_args) do
+      {:ok, ~N[9999-12-31 23:59:59]} -> :no_expiration
       {:ok, datetime} -> datetime |> DateTime.from_naive!("Etc/UTC") |> DateTime.to_unix
       _ ->
         Logger.error("Unhandled ASN1 time structure - #{date_args}}")
