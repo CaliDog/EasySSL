@@ -190,7 +190,7 @@ defmodule EasySSL do
 
   defp to_generalized_time({:generalTime, time}), do: time
   defp to_generalized_time({:utcTime, time}) do
-    year = time |> Enum.take(2) |> :string.to_integer()
+    year = time |> Enum.take(2) |> List.to_integer()
     prefix = if year >=  50, do: '19', else: '20'
     prefix ++ time
   end

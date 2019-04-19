@@ -87,4 +87,18 @@ defmodule EasySSLTest do
     assert cert.not_after == :no_expiration
   end
 
+  test "parses validity dates correctly" do
+    cert = File.read!(@pem_cert_dir <> "github.com.crt") |> EasySSL.parse_pem()
+    assert Map.has_key?(cert, :not_before)
+    assert Map.has_key?(cert, :not_after)
+
+    {:ok, correct_before, _offset} = DateTime.from_iso8601("2013-06-10T00:00:00Z")
+    {:ok, correct_after, _offset} = DateTime.from_iso8601("2015-09-02T12:00:00Z")
+    {:ok, actual_before} = DateTime.from_unix(cert.not_before)
+    {:ok, actual_after} = DateTime.from_unix(cert.not_after)
+
+    assert actual_before == correct_before
+    assert actual_after == correct_after
+  end
+
 end
