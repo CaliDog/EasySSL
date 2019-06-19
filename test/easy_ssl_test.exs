@@ -101,4 +101,9 @@ defmodule EasySSLTest do
     assert actual_after == correct_after
   end
 
+  test "parses email address correctly" do
+    cert = File.read!(@pem_cert_dir <> "email-test.crt") |> EasySSL.parse_pem()
+
+    assert get_in(cert, [:subject, :emailAddress]) == "mailbox@domain.tld"
+  end
 end

@@ -224,6 +224,7 @@ defmodule EasySSL do
       :ST => nil,
       :O => nil,
       :OU => nil,
+      :emailAddress => nil
     }
 
     {:rdnSequence, subject_attribute} = cert |> get_field(:subject)
@@ -238,6 +239,7 @@ defmodule EasySSL do
         {2, 5, 4, 8} -> :ST
         {2, 5, 4, 10} -> :O
         {2, 5, 4, 11} -> :OU
+        {1, 2, 840, 113549, 1, 9, 1} -> :emailAddress
         _ -> nil
       end
 
