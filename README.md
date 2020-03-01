@@ -37,6 +37,7 @@ We aim to make the usage as stupid simple as possible, so there are only 2 expor
   not_after: 1398523877,
   not_before: 1366987877,
   serial_number: "27ACAE30B9F323",
+  signature_algorithm: "sha, rsa",
   subject: %{
     C: nil,
     CN: "www.acaline.com",
