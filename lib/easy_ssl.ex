@@ -399,13 +399,15 @@ defmodule EasySSL do
                     {:DistributionPoint, {:fullName, crls}, :asn1_NOVALUE, :asn1_NOVALUE} ->
                       crl_string = crls
                                    |> Enum.map(fn identifier ->
-                        case identifier do
-                          {:uniformResourceIdentifier, uri} ->
-                            " URI:#{uri}"
-                          {:directoryName, _rdn_sequence} ->
-                            "" # Just skip this for now, not commonly used.
-                        end
-                      end)
+                                     case identifier do
+                                       {:uniformResourceIdentifier, uri} ->
+                                         " URI:#{uri}"
+                                       {:directoryName, _rdn_sequence} ->
+                                         "" # Just skip this for now, not commonly used.
+                                       {:rfc822Name, _rdn_sequence} ->
+                                         "" # Just skip this for now, not commonly used.
+                                     end
+                                   end)
                                    |> Enum.join("\n")
 
                       output = ["Full Name:" | output]
