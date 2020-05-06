@@ -397,18 +397,18 @@ defmodule EasySSL do
                 |> Enum.reduce([], fn distro_point, output ->
                   case distro_point do
                     {:DistributionPoint, {:fullName, crls}, :asn1_NOVALUE, :asn1_NOVALUE} ->
-                      crl_string = crls
-                                   |> Enum.map(fn identifier ->
-                                     case identifier do
-                                       {:uniformResourceIdentifier, uri} ->
-                                         " URI:#{uri}"
-                                       {:directoryName, _rdn_sequence} ->
-                                         "" # Just skip this for now, not commonly used.
-                                       {:rfc822Name, _rdn_sequence} ->
-                                         "" # Just skip this for now, not commonly used.
-                                     end
-                                   end)
-                                   |> Enum.join("\n")
+                      crl_string =
+                        crls
+                        |> Enum.map(fn identifier ->
+                          case identifier do
+                            {:uniformResourceIdentifier, uri} ->
+                              " URI:#{uri}"
+                            {:rfc822Name, identifier} -> " RFC 822 Name: #{identifier}"
+                            {:directoryName, _rdn_sequence} ->
+                              "" # Just skip this for now, not commonly used.
+                          end
+                        end)
+                        |> Enum.join("\n")
 
                       output = ["Full Name:" | output]
                       output = [crl_string | output]
