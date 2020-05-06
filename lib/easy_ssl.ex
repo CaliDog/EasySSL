@@ -289,8 +289,10 @@ defmodule EasySSL do
                 :authorityInfoAccess,
                 authority_info_access
                 |> Enum.reduce([], fn match, entries ->
-                  {:AccessDescription, oid, {:uniformResourceIdentifier, url}} = match
-                  ["#{@authority_info_access_oids[oid]}:#{url}" | entries]
+                  case match do
+                    {:AccessDescription, oid, {:uniformResourceIdentifier, url}} -> ["#{@authority_info_access_oids[oid]}:#{url}" | entries]
+                    _ -> entries
+                  end
                 end)
                 |> Enum.join("\n")
                 |> String.replace_suffix("", "\n")
