@@ -181,11 +181,35 @@ defmodule EasySSL do
 
   defp parse_expiry(cert) do
     {:Validity, not_before, not_after} = cert |> get_field(:validity)
-
+    not_before = clean_time(not_before)
+    not_after = clean_time(not_after)
     %{
       :not_before => not_before |> to_generalized_time |> asn1_to_epoch,
       :not_after => not_after |> to_generalized_time |> asn1_to_epoch
     }
+  end
+
+  def clean_time(time_tuple) do
+    {type, time_charlist} = time_tuple
+    time_string =
+      time_charlist
+      |> to_string
+
+    output =
+      time_string
+      |> String.split("+")
+      |> List.first
+      |> (fn foo ->
+        last = String.last(foo)
+        case last do
+          "Z" -> foo
+          _ -> foo <> "Z"
+        end
+      end).()
+      |> to_charlist
+
+    {type, output}
+
   end
 
   defp to_generalized_time({:generalTime, time}), do: time
