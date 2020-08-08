@@ -5,14 +5,14 @@ defmodule EasySSLTest do
   @pem_cert_dir "test/data/pem/"
 
   def assert_has_normal_atom_keys(cert) do
-    keys = [:extensions, :fingerprint, :not_after, :not_before, :serial_number, :subject]
+    keys = [:extensions, :fingerprint, :issuer, :not_after, :not_before, :serial_number, :subject]
     Enum.each(keys, fn key ->
       assert Map.has_key?(cert, key)
     end)
   end
 
   def assert_has_normal_string_keys(cert) do
-    keys = ["extensions", "fingerprint", "not_after", "not_before", "serial_number", "subject"]
+    keys = ["extensions", "fingerprint", "issuer", "not_after", "not_before", "serial_number", "subject"]
     Enum.each(keys, fn key ->
       assert Map.has_key?(cert, key)
     end)
@@ -99,6 +99,15 @@ defmodule EasySSLTest do
 
     assert actual_before == correct_before
     assert actual_after == correct_after
+  end
+
+  test "parses subject and issuer correctly" do
+    cert = File.read!(@pem_cert_dir <> "github.com.crt") |> EasySSL.parse_pem()
+    assert Map.has_key?(cert, :subject)
+    assert Map.has_key?(cert, :issuer)
+
+    assert cert.subject.aggregated == "/C=US/CN=github.com/L=San Francisco/O=GitHub, Inc./ST=California"
+    assert cert.issuer.aggregated == "/C=US/CN=DigiCert High Assurance EV CA-1/O=DigiCert Inc/OU=www.digicert.com"
   end
 
 end
