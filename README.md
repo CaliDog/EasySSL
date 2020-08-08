@@ -34,6 +34,15 @@ We aim to make the usage as stupid simple as possible, so there are only 2 expor
     subjectKeyIdentifier: "E6:61:14:4E:5A:4B:51:0C:4E:6C:5E:3C:79:61:65:D4:BD:64:94:BE"
   },
   fingerprint: "FA:BE:B5:9B:ED:C2:2B:42:7E:B1:45:C8:9A:8A:73:16:4A:A0:10:09",
+  issuer: %{
+    C: "US",
+    CN: "Go Daddy Secure Certification Authority",
+    L: "Scottsdale",
+    O: "GoDaddy.com, Inc.",
+    OU: "http://certificates.godaddy.com/repository",
+    ST: "Arizona",
+    aggregated: "/C=US/CN=Go Daddy Secure Certification Authority/L=Scottsdale/O=GoDaddy.com, Inc./OU=http://certificates.godaddy.com/repository/ST=Arizona"
+  },
   not_after: 1398523877,
   not_before: 1366987877,
   serial_number: "27ACAE30B9F323",
@@ -60,6 +69,9 @@ iex(1)> File.read!("some_cert.der") |> EasySSL.parse_der
     ...SNIP...
   },
   fingerprint: "FA:BE:B5:9B:ED:C2:2B:42:7E:B1:45:C8:9A:8A:73:16:4A:A0:10:09",
+  issuer: %{
+    ...SNIP...
+  },
   not_after: 1398523877,
   not_before: 1366987877,
   serial_number: "27ACAE30B9F323",
@@ -81,6 +93,9 @@ iex(1)> File.read!("some_cert.pem") |> EasySSL.parse_pem
     ...SNIP...
   },
   fingerprint: "FA:BE:B5:9B:ED:C2:2B:42:7E:B1:45:C8:9A:8A:73:16:4A:A0:10:09",
+  issuer: %{
+    ...SNIP...
+  },
   not_after: 1398523877,
   not_before: 1366987877,
   serial_number: "27ACAE30B9F323",
