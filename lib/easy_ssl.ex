@@ -66,7 +66,8 @@ defmodule EasySSL do
     serialized_certificate = %{}
       |> Map.put(:fingerprint, certificate_der |> fingerprint_cert)
       |> Map.put(:serial_number, cert |> get_field(:serialNumber) |> Integer.to_string(16))
-      |> Map.put(:subject, cert |> parse_subject)
+      |> Map.put(:subject, cert |> parse_rdnsequence(:subject))
+      |> Map.put(:issuer, cert |> parse_rdnsequence(:issuer))
       |> Map.put(:extensions, cert |> parse_extensions)
       |> Map.merge(parse_expiry(cert))
 
@@ -216,8 +217,8 @@ defmodule EasySSL do
     end
   end
 
-  defp parse_subject(cert) do
-    subject = %{
+  defp parse_rdnsequence(cert, field) do
+    rdnsequence = %{
       :CN => nil,
       :C => nil,
       :L => nil,
@@ -226,9 +227,9 @@ defmodule EasySSL do
       :OU => nil,
     }
 
-    {:rdnSequence, subject_attribute} = cert |> get_field(:subject)
+    {:rdnSequence, rdnsequence_attribute} = cert |> get_field(field)
 
-    subject = subject_attribute |> List.flatten |> Enum.reduce(subject, fn attr, subject ->
+    rdnsequence = rdnsequence_attribute |> List.flatten |> Enum.reduce(rdnsequence, fn attr, rdnsequence ->
       {:AttributeTypeAndValue, oid, attribute_value} = attr
 
       attr_atom = case oid do
@@ -242,12 +243,12 @@ defmodule EasySSL do
       end
 
       case attr_atom do
-        nil -> subject
-        _ -> %{subject | attr_atom => attribute_value |> coerce_to_string |> to_string}
+        nil -> rdnsequence
+        _ -> %{rdnsequence | attr_atom => attribute_value |> coerce_to_string |> to_string}
       end
     end)
 
-    Map.put(subject, :aggregated, subject |> aggregate_subject)
+    Map.put(rdnsequence, :aggregated, rdnsequence |> aggregate_rdnsequence)
 
   end
 
@@ -263,8 +264,8 @@ defmodule EasySSL do
     end
   end
 
-  defp aggregate_subject(subject) do
-    subject
+  defp aggregate_rdnsequence(rdnsequence) do
+    rdnsequence
       # Filter out empty values
       |> Enum.filter(fn {_, v} -> v != nil end)
         # Turn everything in to a string so C=blah.com
