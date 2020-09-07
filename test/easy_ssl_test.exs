@@ -23,7 +23,6 @@ defmodule EasySSLTest do
       |> Enum.each(fn cert_filename ->
             original_cert = File.read!(@der_cert_dir <> cert_filename)
               |> EasySSL.parse_der
-            IO.inspect original_cert
             reparsed_cert = original_cert
               |> Poison.encode!
               |> Poison.decode!
