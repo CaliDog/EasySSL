@@ -49,6 +49,7 @@ defmodule EasySSL do
         not_after: 1398523877,
         not_before: 1366987877,
         serial_number: "27ACAE30B9F323",
+        signature_algorithm: "sha, rsa",
         subject: %{
           C: nil,
           CN: "www.acaline.com",
@@ -66,6 +67,7 @@ defmodule EasySSL do
     serialized_certificate = %{}
       |> Map.put(:fingerprint, certificate_der |> fingerprint_cert)
       |> Map.put(:serial_number, cert |> get_field(:serialNumber) |> Integer.to_string(16))
+      |> Map.put(:signature_algorithm, cert |> parse_signature_algo)
       |> Map.put(:subject, cert |> parse_subject)
       |> Map.put(:extensions, cert |> parse_extensions)
       |> Map.merge(parse_expiry(cert))
@@ -214,6 +216,16 @@ defmodule EasySSL do
         Logger.error("Unhandled ASN1 time structure - #{date_args}}")
         nil
     end
+  end
+
+  defp parse_signature_algo(cert) do
+    cert
+    |> get_field(:signature)
+    |> get_field(:algorithm)
+    |> :public_key.pkix_sign_types()
+    |> Tuple.to_list()
+    |> Enum.map(&Atom.to_string/1)
+    |> Enum.join(", ")
   end
 
   defp parse_subject(cert) do
