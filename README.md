@@ -41,7 +41,8 @@ We aim to make the usage as stupid simple as possible, so there are only 2 expor
     O: "GoDaddy.com, Inc.",
     OU: "http://certificates.godaddy.com/repository",
     ST: "Arizona",
-    aggregated: "/C=US/CN=Go Daddy Secure Certification Authority/L=Scottsdale/O=GoDaddy.com, Inc./OU=http://certificates.godaddy.com/repository/ST=Arizona"
+    aggregated: "/C=US/CN=Go Daddy Secure Certification Authority/L=Scottsdale/O=GoDaddy.com, Inc./OU=http://certificates.godaddy.com/repository/ST=Arizona",
+    emailAddress: nil
   },
   not_after: 1398523877,
   not_before: 1366987877,
@@ -54,7 +55,8 @@ We aim to make the usage as stupid simple as possible, so there are only 2 expor
     O: nil,
     OU: "Domain Control Validated",
     ST: nil,
-    aggregated: "/CN=www.acaline.com/OU=Domain Control Validated"
+    aggregated: "/CN=www.acaline.com/OU=Domain Control Validated",
+    emailAddress: nil
   }
 }
 ```
@@ -76,6 +78,7 @@ iex(1)> File.read!("some_cert.der") |> EasySSL.parse_der
   not_after: 1398523877,
   not_before: 1366987877,
   serial_number: "27ACAE30B9F323",
+  signature_algorithm: "sha, rsa",
   subject: %{
     ...SNIP...
   }
@@ -100,6 +103,7 @@ iex(1)> File.read!("some_cert.pem") |> EasySSL.parse_pem
   not_after: 1398523877,
   not_before: 1366987877,
   serial_number: "27ACAE30B9F323",
+  signature_algorithm: "sha, rsa",
   subject: %{
     ...SNIP...
   }

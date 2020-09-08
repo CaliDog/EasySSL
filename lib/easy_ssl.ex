@@ -53,7 +53,8 @@ defmodule EasySSL do
           O: "GoDaddy.com, Inc.",
           OU: "http://certificates.godaddy.com/repository",
           ST: "Arizona",
-          aggregated: "/C=US/CN=Go Daddy Secure Certification Authority/L=Scottsdale/O=GoDaddy.com, Inc./OU=http://certificates.godaddy.com/repository/ST=Arizona"
+          aggregated: "/C=US/CN=Go Daddy Secure Certification Authority/L=Scottsdale/O=GoDaddy.com, Inc./OU=http://certificates.godaddy.com/repository/ST=Arizona",
+          emailAddress: nil
         },
         not_after: 1398523877,
         not_before: 1366987877,
@@ -66,7 +67,8 @@ defmodule EasySSL do
           O: nil,
           OU: "Domain Control Validated",
           ST: nil,
-          aggregated: "/CN=www.acaline.com/OU=Domain Control Validated"
+          aggregated: "/CN=www.acaline.com/OU=Domain Control Validated",
+          emailAddress: nil
         }
       }
   """
@@ -151,11 +153,13 @@ defmodule EasySSL do
           O: "GoDaddy.com, Inc.",
           OU: "http://certificates.godaddy.com/repository",
           ST: "Arizona",
-          aggregated: "/C=US/CN=Go Daddy Secure Certification Authority/L=Scottsdale/O=GoDaddy.com, Inc./OU=http://certificates.godaddy.com/repository/ST=Arizona"
+          aggregated: "/C=US/CN=Go Daddy Secure Certification Authority/L=Scottsdale/O=GoDaddy.com, Inc./OU=http://certificates.godaddy.com/repository/ST=Arizona",
+          emailAddress: nil
         },
         not_after: 1398523877,
         not_before: 1366987877,
         serial_number: "27ACAE30B9F323",
+        signature_algorithm: "sha, rsa",
         subject: %{
           C: nil,
           CN: "www.acaline.com",
@@ -163,7 +167,8 @@ defmodule EasySSL do
           O: nil,
           OU: "Domain Control Validated",
           ST: nil,
-          aggregated: "/CN=www.acaline.com/OU=Domain Control Validated"
+          aggregated: "/CN=www.acaline.com/OU=Domain Control Validated",
+          emailAddress: nil
         }
       }
 """
