@@ -109,9 +109,17 @@ defmodule EasySSLTest do
     assert cert.issuer.aggregated == "/C=US/CN=DigiCert High Assurance EV CA-1/O=DigiCert Inc/OU=www.digicert.com"
   end
 
+  test "parses signature algorithm correctly" do
+    cert = File.read!(@pem_cert_dir <> "acaline.com.crt") |> EasySSL.parse_pem()
+    assert Map.has_key?(cert, :signature_algorithm)
+
+    assert cert.signature_algorithm == "sha, rsa"
+  end
+
   test "parses email address correctly" do
     cert = File.read!(@pem_cert_dir <> "email-test.crt") |> EasySSL.parse_pem()
 
     assert get_in(cert, [:subject, :emailAddress]) == "mailbox@domain.tld"
+    assert get_in(cert, [:issuer, :emailAddress]) == "mailbox@domain.tld"
   end
 end
