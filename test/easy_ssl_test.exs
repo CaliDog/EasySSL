@@ -5,14 +5,14 @@ defmodule EasySSLTest do
   @pem_cert_dir "test/data/pem/"
 
   def assert_has_normal_atom_keys(cert) do
-    keys = [:extensions, :fingerprint, :issuer, :not_after, :not_before, :serial_number, :subject]
+    keys = [:extensions, :fingerprint, :issuer, :not_after, :not_before, :serial_number, :signature_algorithm, :subject]
     Enum.each(keys, fn key ->
       assert Map.has_key?(cert, key)
     end)
   end
 
   def assert_has_normal_string_keys(cert) do
-    keys = ["extensions", "fingerprint", "issuer", "not_after", "not_before", "serial_number", "subject"]
+    keys = ["extensions", "fingerprint", "issuer", "not_after", "not_before", "serial_number", "signature_algorithm", "subject"]
     Enum.each(keys, fn key ->
       assert Map.has_key?(cert, key)
     end)
@@ -23,7 +23,6 @@ defmodule EasySSLTest do
       |> Enum.each(fn cert_filename ->
             original_cert = File.read!(@der_cert_dir <> cert_filename)
               |> EasySSL.parse_der
-
             reparsed_cert = original_cert
               |> Poison.encode!
               |> Poison.decode!
@@ -110,4 +109,9 @@ defmodule EasySSLTest do
     assert cert.issuer.aggregated == "/C=US/CN=DigiCert High Assurance EV CA-1/O=DigiCert Inc/OU=www.digicert.com"
   end
 
+  test "parses email address correctly" do
+    cert = File.read!(@pem_cert_dir <> "email-test.crt") |> EasySSL.parse_pem()
+
+    assert get_in(cert, [:subject, :emailAddress]) == "mailbox@domain.tld"
+  end
 end

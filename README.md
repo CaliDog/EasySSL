@@ -9,7 +9,7 @@ As a forewarning, this is by no means an all-inclusive library for parsing X509 
 As with most libraries in the Elixir landscape, you can install this by adding the following to your deps in `mix.exs`:
 
 ```
-{:easy_ssl, "~> 1.1.1"}
+{:easy_ssl, "~> 1.2.0"}
 ```
 
 Then run `$ mix deps.get` to fetch the dependency.
@@ -46,6 +46,7 @@ We aim to make the usage as stupid simple as possible, so there are only 2 expor
   not_after: 1398523877,
   not_before: 1366987877,
   serial_number: "27ACAE30B9F323",
+  signature_algorithm: "sha, rsa",
   subject: %{
     C: nil,
     CN: "www.acaline.com",

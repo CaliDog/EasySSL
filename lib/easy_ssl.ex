@@ -58,6 +58,7 @@ defmodule EasySSL do
         not_after: 1398523877,
         not_before: 1366987877,
         serial_number: "27ACAE30B9F323",
+        signature_algorithm: "sha, rsa",
         subject: %{
           C: nil,
           CN: "www.acaline.com",
@@ -75,6 +76,7 @@ defmodule EasySSL do
     serialized_certificate = %{}
       |> Map.put(:fingerprint, certificate_der |> fingerprint_cert)
       |> Map.put(:serial_number, cert |> get_field(:serialNumber) |> Integer.to_string(16))
+      |> Map.put(:signature_algorithm, cert |> parse_signature_algo)
       |> Map.put(:subject, cert |> parse_rdnsequence(:subject))
       |> Map.put(:issuer, cert |> parse_rdnsequence(:issuer))
       |> Map.put(:extensions, cert |> parse_extensions)
@@ -200,11 +202,35 @@ defmodule EasySSL do
 
   defp parse_expiry(cert) do
     {:Validity, not_before, not_after} = cert |> get_field(:validity)
-
+    not_before = clean_time(not_before)
+    not_after = clean_time(not_after)
     %{
       :not_before => not_before |> to_generalized_time |> asn1_to_epoch,
       :not_after => not_after |> to_generalized_time |> asn1_to_epoch
     }
+  end
+
+  def clean_time(time_tuple) do
+    {type, time_charlist} = time_tuple
+    time_string =
+      time_charlist
+      |> to_string
+
+    output =
+      time_string
+      |> String.split("+")
+      |> List.first
+      |> (fn foo ->
+        last = String.last(foo)
+        case last do
+          "Z" -> foo
+          _ -> foo <> "Z"
+        end
+      end).()
+      |> to_charlist
+
+    {type, output}
+
   end
 
   defp to_generalized_time({:generalTime, time}), do: time
@@ -235,6 +261,16 @@ defmodule EasySSL do
     end
   end
 
+  defp parse_signature_algo(cert) do
+    cert
+    |> get_field(:signature)
+    |> get_field(:algorithm)
+    |> :public_key.pkix_sign_types()
+    |> Tuple.to_list()
+    |> Enum.map(&Atom.to_string/1)
+    |> Enum.join(", ")
+  end
+
   defp parse_rdnsequence(cert, field) do
     rdnsequence = %{
       :CN => nil,
@@ -243,6 +279,7 @@ defmodule EasySSL do
       :ST => nil,
       :O => nil,
       :OU => nil,
+      :emailAddress => nil
     }
 
     {:rdnSequence, rdnsequence_attribute} = cert |> get_field(field)
@@ -257,6 +294,7 @@ defmodule EasySSL do
         {2, 5, 4, 8} -> :ST
         {2, 5, 4, 10} -> :O
         {2, 5, 4, 11} -> :OU
+        {1, 2, 840, 113549, 1, 9, 1} -> :emailAddress
         _ -> nil
       end
 
@@ -308,8 +346,10 @@ defmodule EasySSL do
                 :authorityInfoAccess,
                 authority_info_access
                 |> Enum.reduce([], fn match, entries ->
-                  {:AccessDescription, oid, {:uniformResourceIdentifier, url}} = match
-                  ["#{@authority_info_access_oids[oid]}:#{url}" | entries]
+                  case match do
+                    {:AccessDescription, oid, {:uniformResourceIdentifier, url}} -> ["#{@authority_info_access_oids[oid]}:#{url}" | entries]
+                    _ -> entries
+                  end
                 end)
                 |> Enum.join("\n")
                 |> String.replace_suffix("", "\n")
@@ -414,16 +454,18 @@ defmodule EasySSL do
                 |> Enum.reduce([], fn distro_point, output ->
                   case distro_point do
                     {:DistributionPoint, {:fullName, crls}, :asn1_NOVALUE, :asn1_NOVALUE} ->
-                      crl_string = crls
-                                   |> Enum.map(fn identifier ->
-                        case identifier do
-                          {:uniformResourceIdentifier, uri} ->
-                            " URI:#{uri}"
-                          {:directoryName, _rdn_sequence} ->
-                            "" # Just skip this for now, not commonly used.
-                        end
-                      end)
-                                   |> Enum.join("\n")
+                      crl_string =
+                        crls
+                        |> Enum.map(fn identifier ->
+                          case identifier do
+                            {:uniformResourceIdentifier, uri} ->
+                              " URI:#{uri}"
+                            {:rfc822Name, identifier} -> " RFC 822 Name: #{identifier}"
+                            {:directoryName, _rdn_sequence} ->
+                              "" # Just skip this for now, not commonly used.
+                          end
+                        end)
+                        |> Enum.join("\n")
 
                       output = ["Full Name:" | output]
                       output = [crl_string | output]

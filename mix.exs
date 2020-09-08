@@ -5,7 +5,7 @@ defmodule EasySSL.MixProject do
     [
       app: :easy_ssl,
       name: "EasySSL",
-      version: "1.1.1",
+      version: "1.2.1",
       elixir: "~> 1.6",
       description: "SSL/X509 parsing for humans.",
       deps: deps(),
