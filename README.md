@@ -8,8 +8,10 @@ As a forewarning, this is by no means an all-inclusive library for parsing X509 
 
 As with most libraries in the Elixir landscape, you can install this by adding the following to your deps in `mix.exs`:
 
+(Current version: ![](http://img.shields.io/hexpm/v/easy_ssl.svg))
+
 ```
-{:easy_ssl, "~> 1.2.0"}
+{:easy_ssl, "~> 1.3.0"}
 ```
 
 Then run `$ mix deps.get` to fetch the dependency.
