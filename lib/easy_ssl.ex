@@ -46,6 +46,16 @@ defmodule EasySSL do
           subjectKeyIdentifier: "E6:61:14:4E:5A:4B:51:0C:4E:6C:5E:3C:79:61:65:D4:BD:64:94:BE"
         },
         fingerprint: "FA:BE:B5:9B:ED:C2:2B:42:7E:B1:45:C8:9A:8A:73:16:4A:A0:10:09",
+        issuer: %{
+          C: "US",
+          CN: "Go Daddy Secure Certification Authority",
+          L: "Scottsdale",
+          O: "GoDaddy.com, Inc.",
+          OU: "http://certificates.godaddy.com/repository",
+          ST: "Arizona",
+          aggregated: "/C=US/CN=Go Daddy Secure Certification Authority/L=Scottsdale/O=GoDaddy.com, Inc./OU=http://certificates.godaddy.com/repository/ST=Arizona",
+          emailAddress: nil
+        },
         not_after: 1398523877,
         not_before: 1366987877,
         serial_number: "27ACAE30B9F323",
@@ -57,7 +67,8 @@ defmodule EasySSL do
           O: nil,
           OU: "Domain Control Validated",
           ST: nil,
-          aggregated: "/CN=www.acaline.com/OU=Domain Control Validated"
+          aggregated: "/CN=www.acaline.com/OU=Domain Control Validated",
+          emailAddress: nil
         }
       }
   """
@@ -68,7 +79,8 @@ defmodule EasySSL do
       |> Map.put(:fingerprint, certificate_der |> fingerprint_cert)
       |> Map.put(:serial_number, cert |> get_field(:serialNumber) |> Integer.to_string(16))
       |> Map.put(:signature_algorithm, cert |> parse_signature_algo)
-      |> Map.put(:subject, cert |> parse_subject)
+      |> Map.put(:subject, cert |> parse_rdnsequence(:subject))
+      |> Map.put(:issuer, cert |> parse_rdnsequence(:issuer))
       |> Map.put(:extensions, cert |> parse_extensions)
       |> Map.merge(parse_expiry(cert))
 
@@ -134,9 +146,20 @@ defmodule EasySSL do
           subjectKeyIdentifier: "E6:61:14:4E:5A:4B:51:0C:4E:6C:5E:3C:79:61:65:D4:BD:64:94:BE"
         },
         fingerprint: "FA:BE:B5:9B:ED:C2:2B:42:7E:B1:45:C8:9A:8A:73:16:4A:A0:10:09",
+        issuer: %{
+          C: "US",
+          CN: "Go Daddy Secure Certification Authority",
+          L: "Scottsdale",
+          O: "GoDaddy.com, Inc.",
+          OU: "http://certificates.godaddy.com/repository",
+          ST: "Arizona",
+          aggregated: "/C=US/CN=Go Daddy Secure Certification Authority/L=Scottsdale/O=GoDaddy.com, Inc./OU=http://certificates.godaddy.com/repository/ST=Arizona",
+          emailAddress: nil
+        },
         not_after: 1398523877,
         not_before: 1366987877,
         serial_number: "27ACAE30B9F323",
+        signature_algorithm: "sha, rsa",
         subject: %{
           C: nil,
           CN: "www.acaline.com",
@@ -144,7 +167,8 @@ defmodule EasySSL do
           O: nil,
           OU: "Domain Control Validated",
           ST: nil,
-          aggregated: "/CN=www.acaline.com/OU=Domain Control Validated"
+          aggregated: "/CN=www.acaline.com/OU=Domain Control Validated",
+          emailAddress: nil
         }
       }
 """
@@ -252,8 +276,8 @@ defmodule EasySSL do
     |> Enum.join(", ")
   end
 
-  defp parse_subject(cert) do
-    subject = %{
+  defp parse_rdnsequence(cert, field) do
+    rdnsequence = %{
       :CN => nil,
       :C => nil,
       :L => nil,
@@ -263,9 +287,9 @@ defmodule EasySSL do
       :emailAddress => nil
     }
 
-    {:rdnSequence, subject_attribute} = cert |> get_field(:subject)
+    {:rdnSequence, rdnsequence_attribute} = cert |> get_field(field)
 
-    subject = subject_attribute |> List.flatten |> Enum.reduce(subject, fn attr, subject ->
+    rdnsequence = rdnsequence_attribute |> List.flatten |> Enum.reduce(rdnsequence, fn attr, rdnsequence ->
       {:AttributeTypeAndValue, oid, attribute_value} = attr
 
       attr_atom = case oid do
@@ -280,12 +304,12 @@ defmodule EasySSL do
       end
 
       case attr_atom do
-        nil -> subject
-        _ -> %{subject | attr_atom => attribute_value |> coerce_to_string |> to_string}
+        nil -> rdnsequence
+        _ -> %{rdnsequence | attr_atom => attribute_value |> coerce_to_string |> to_string}
       end
     end)
 
-    Map.put(subject, :aggregated, subject |> aggregate_subject)
+    Map.put(rdnsequence, :aggregated, rdnsequence |> aggregate_rdnsequence)
 
   end
 
@@ -296,13 +320,13 @@ defmodule EasySSL do
       {:teletexString, string} -> string
       string when is_list(string) -> string
       _ ->
-        Logger.error("Unhandled subject attribute type #{inspect attribute_value}")
+        Logger.error("Unhandled RDN attribute type #{inspect attribute_value}")
         nil
     end
   end
 
-  defp aggregate_subject(subject) do
-    subject
+  defp aggregate_rdnsequence(rdnsequence) do
+    rdnsequence
       # Filter out empty values
       |> Enum.filter(fn {_, v} -> v != nil end)
         # Turn everything in to a string so C=blah.com
