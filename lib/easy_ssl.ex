@@ -478,7 +478,7 @@ defmodule EasySSL do
                       |> Enum.reverse()
 
                     _ ->
-                      Logger.error("Unhandled CRL distrobution point #{inspect distro_point}")
+                      Logger.error("Unhandled CRL distribution point #{inspect distro_point}")
                       output
                   end
                 end)
