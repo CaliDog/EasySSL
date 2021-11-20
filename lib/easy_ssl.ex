@@ -1,12 +1,15 @@
-require Logger
-
 defmodule EasySSL do
   @moduledoc """
-  EasySSL is a wrapper around Erlang's `:public_key` module to make it far more friendly. It automatically
-  processes OIDs for most X509v3 extensions and subject fields.
+  EasySSL is a wrapper around Erlang's `:public_key` module to make it far more
+  friendly. It automatically processes OIDs for most X509v3 extensions and
+  subject fields.
 
-  There are really only two functions of note - `parse_der` and `parse_pem`, which should have obvious functions.
+  There are really only two functions of note - `parse_der` and `parse_pem`,
+  which should have obvious functions.
   """
+
+  require Logger
+
   @pubkey_schema Record.extract_all(from_lib: "public_key/include/OTP-PUB-KEY.hrl")
 
   @extended_key_usages %{
@@ -32,7 +35,7 @@ defmodule EasySSL do
   ## Examples
 
       # Pass in a binary (from Base.decode64, or some other source)
-      iex(1)> EasySSL.parse_der(<<...>>)
+      iex> EasySSL.parse_der(<<...>>)
       %{
         extensions: %{
           authorityInfoAccess: "CA Issuers - URI:http://certificates.godaddy.com/repository/gd_intermediate.crt\\nOCSP - URI:http://ocsp.godaddy.com/\\n",
@@ -71,6 +74,7 @@ defmodule EasySSL do
           emailAddress: nil
         }
       }
+
   """
   def parse_der(certificate_der, opts \\ [all_domains: false, serialize: false]) when is_binary(certificate_der) do
     cert = :public_key.pkix_decode_cert(certificate_der, :otp) |> get_field(:tbsCertificate)
@@ -132,7 +136,7 @@ defmodule EasySSL do
   ## Examples
 
       # Pass in a binary (from Base.decode64, or some other source)
-      iex(1)> EasySSL.parse_pem("-----BEGIN CERTIFICATE-----\\nMII...")
+      iex> EasySSL.parse_pem("-----BEGIN CERTIFICATE-----\\nMII...")
       %{
         extensions: %{
           authorityInfoAccess: "CA Issuers - URI:http://certificates.godaddy.com/repository/gd_intermediate.crt\\nOCSP - URI:http://ocsp.godaddy.com/\\n",
@@ -171,7 +175,8 @@ defmodule EasySSL do
           emailAddress: nil
         }
       }
-"""
+
+  """
   def parse_pem(cert_charlist) when is_list(cert_charlist) do parse_pem(cert_charlist |> to_string) end
   def parse_pem(cert_pem, opts \\ [all_domains: false, return_base64: false]) do
     cert_regex = ~r/^\-{5}BEGIN\sCERTIFICATE\-{5}\n(?<certificate>[^\-]+)\-{5}END\sCERTIFICATE\-{5}/
@@ -478,7 +483,7 @@ defmodule EasySSL do
                       |> Enum.reverse()
 
                     _ ->
-                      Logger.error("Unhandled CRL distrobution point #{inspect distro_point}")
+                      Logger.error("Unhandled CRL distribution point #{inspect distro_point}")
                       output
                   end
                 end)

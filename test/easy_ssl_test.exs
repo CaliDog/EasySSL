@@ -18,7 +18,7 @@ defmodule EasySSLTest do
     end)
   end
 
-  test "parses all certifiates in @der_cert_dir directory" do
+  test "parses all certificates in @der_cert_dir directory" do
     File.ls!(@der_cert_dir)
       |> Enum.each(fn cert_filename ->
             original_cert = File.read!(@der_cert_dir <> cert_filename)
@@ -31,7 +31,7 @@ defmodule EasySSLTest do
          end)
   end
 
-  test "parses all certifiates in @pem_cert_dir directory" do
+  test "parses all certificates in @pem_cert_dir directory" do
     File.ls!(@pem_cert_dir)
     |> Enum.each(fn cert_filename ->
       original_cert = File.read!(@pem_cert_dir <> cert_filename)

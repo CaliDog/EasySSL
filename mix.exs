@@ -1,18 +1,25 @@
 defmodule EasySSL.MixProject do
   use Mix.Project
 
+  @source_url "https://github.com/CaliDog/EasySSL"
+  @version "1.3.0"
+
   def project do
     [
       app: :easy_ssl,
       name: "EasySSL",
-      version: "1.3.0",
+      version: @version,
       elixir: "~> 1.6",
-      description: "SSL/X509 parsing for humans.",
       deps: deps(),
+      docs: docs(),
+      package: package(),
       test_coverage: [tool: ExCoveralls],
-      preferred_cli_env: [coveralls: :test, "coveralls.detail": :test, "coveralls.post": :test, "coveralls.html": :test],
-      source_url: "https://github.com/CaliDog/EasySSL",
-      package: package()
+      preferred_cli_env: [
+        coveralls: :test,
+        "coveralls.detail": :test,
+        "coveralls.post": :test,
+        "coveralls.html": :test
+      ]
     ]
   end
 
@@ -25,19 +32,32 @@ defmodule EasySSL.MixProject do
   defp deps do
     [
       {:excoveralls, "~> 0.8", only: :test},
-      {:ex_doc, "~> 0.16", only: :dev, runtime: false},
-      {:poison, "~> 2.0", only: :test},
+      {:ex_doc, ">= 0.0.0", only: :dev, runtime: false},
+      {:poison, "~> 2.0", only: :test}
     ]
   end
 
   defp package() do
     [
       name: "easy_ssl",
-      # These are the default files included in the package
-      files: ["lib", "mix.exs", "README.md"],
+      description: "SSL/X509 parsing for humans.",
+      files: ["lib", "mix.exs", "README.md", "LICENSE.md"],
       maintainers: ["Ryan Sears"],
       licenses: ["MIT"],
-      links: %{"GitHub" => "https://github.com/CaliDog/EasySSL"}
+      links: %{"GitHub" => @source_url}
+    ]
+  end
+
+  defp docs do
+    [
+      extras: [
+        "LICENSE.md": [title: "License"],
+        "README.md": [title: "Overview"]
+      ],
+      main: "readme",
+      source_url: @source_url,
+      source_ref: "v#{@version}",
+      formatters: ["html"]
     ]
   end
 end
