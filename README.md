@@ -1,5 +1,11 @@
 # EasySSL
 
+[![Module Version](https://img.shields.io/hexpm/v/easy_ssl.svg)](https://hex.pm/packages/easy_ssl)
+[![Hex Docs](https://img.shields.io/badge/hex-docs-lightgreen.svg)](https://hexdocs.pm/easy_ssl/)
+[![Total Download](https://img.shields.io/hexpm/dt/easy_ssl.svg)](https://hex.pm/packages/easy_ssl)
+[![License](https://img.shields.io/hexpm/l/easy_ssl.svg)](https://github.com/CaliDog/EasySSL/blob/master/LICENSE.md)
+[![Last Updated](https://img.shields.io/github/last-commit/CaliDog/EasySSL.svg)](https://github.com/CaliDog/EasySSL/commits/master)
+
 Originally this module was part of the [Certstream](https://certstream.calidog.io) project, but we decided that it'd be more useful as a stand-alone module to hopefully de-duplicate the annoyances of figuring out how to use Erlang's `:public_key` module to properly parse X509 certificates and coerce things like extensions and subjects to something that more closely resembles certificate parsing in other languages.
 
 As a forewarning, this is by no means an all-inclusive library for parsing X509 certificates, it's just what we needed as part of our project, but pull requests are extremely welcome if you notice some breakage or ways to improve! That being said, it does process millions of certificates per day through Certstream, so we consider it fairly battle tested!
@@ -10,7 +16,7 @@ As with most libraries in the Elixir landscape, you can install this by adding t
 
 (Current version: ![](http://img.shields.io/hexpm/v/easy_ssl.svg))
 
-```
+```elixir
 {:easy_ssl, "~> 1.3.0"}
 ```
 
@@ -68,7 +74,7 @@ We aim to make the usage as stupid simple as possible, so there are only 2 expor
 Parses a DER-encoded X509 certificate
 
 ```elixir
-iex(1)> File.read!("some_cert.der") |> EasySSL.parse_der
+iex> File.read!("some_cert.der") |> EasySSL.parse_der
 %{
   extensions: %{
     ...SNIP...
@@ -93,7 +99,7 @@ iex(1)> File.read!("some_cert.der") |> EasySSL.parse_der
 Parses a PEM-encoded X509 certificate
 
 ```elixir
-iex(1)> File.read!("some_cert.pem") |> EasySSL.parse_pem
+iex> File.read!("some_cert.pem") |> EasySSL.parse_pem
 %{
   extensions: %{
     ...SNIP...
@@ -113,6 +119,11 @@ iex(1)> File.read!("some_cert.pem") |> EasySSL.parse_pem
 
 ```
 
-
-
 If you'd like some other functionality or find a bug please open a ticket!
+
+## Copyright and License
+
+Copyright (c) 2019 Cali Dog Security
+
+This work is free. You can redistribute it and/or modify it under the
+terms of the MIT License. See the [LICENSE.md](./LICENSE.md) file for more details.
