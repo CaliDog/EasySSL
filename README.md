@@ -36,6 +36,7 @@ We aim to make the usage as stupid simple as possible, so there are only 2 expor
     subjectKeyIdentifier: "E6:61:14:4E:5A:4B:51:0C:4E:6C:5E:3C:79:61:65:D4:BD:64:94:BE"
   },
   fingerprint: "FA:BE:B5:9B:ED:C2:2B:42:7E:B1:45:C8:9A:8A:73:16:4A:A0:10:09",
+  fingerprint_sha256: "FA:BE:B5:9B:ED:C2:2B:42:7E:B1:45:C8:9A:8A:73:16:4A:A0:10:09:C1:1A:C0:DE:D7:65:58:07:10:3E:1B:59:1E:A6:E9:7B:47",
   issuer: %{
     C: "US",
     CN: "Go Daddy Secure Certification Authority",
@@ -74,6 +75,7 @@ iex(1)> File.read!("some_cert.der") |> EasySSL.parse_der
     ...SNIP...
   },
   fingerprint: "FA:BE:B5:9B:ED:C2:2B:42:7E:B1:45:C8:9A:8A:73:16:4A:A0:10:09",
+  fingerprint_sha256: "...",
   issuer: %{
     ...SNIP...
   },
@@ -99,6 +101,7 @@ iex(1)> File.read!("some_cert.pem") |> EasySSL.parse_pem
     ...SNIP...
   },
   fingerprint: "FA:BE:B5:9B:ED:C2:2B:42:7E:B1:45:C8:9A:8A:73:16:4A:A0:10:09",
+  fingerprint: "....",
   issuer: %{
     ...SNIP...
   },
