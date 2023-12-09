@@ -313,6 +313,14 @@ defmodule EasySSL do
 
   end
 
+  defp parse_crl_distribution_points(crl_distribution_points)
+       when is_binary(crl_distribution_points) do
+    :public_key.der_decode(:CRLDistributionPoints, crl_distribution_points)
+  end
+  defp parse_crl_distribution_points(crl_distribution_points) do
+    crl_distribution_points
+  end
+
   defp coerce_to_string(attribute_value) do
     case attribute_value do
       {:printableString, string} -> string
@@ -456,6 +464,7 @@ defmodule EasySSL do
                 extension_map,
                 :crlDistributionPoints,
                 crl_distribution_points
+                |> parse_crl_distribution_points
                 |> Enum.reduce([], fn distro_point, output ->
                   case distro_point do
                     {:DistributionPoint, {:fullName, crls}, :asn1_NOVALUE, :asn1_NOVALUE} ->
