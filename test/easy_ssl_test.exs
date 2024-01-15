@@ -5,14 +5,14 @@ defmodule EasySSLTest do
   @pem_cert_dir "test/data/pem/"
 
   def assert_has_normal_atom_keys(cert) do
-    keys = [:extensions, :fingerprint, :issuer, :not_after, :not_before, :serial_number, :signature_algorithm, :subject]
+    keys = [:extensions, :fingerprint, :fingerprint_sha256, :issuer, :not_after, :not_before, :serial_number, :signature_algorithm, :subject]
     Enum.each(keys, fn key ->
       assert Map.has_key?(cert, key)
     end)
   end
 
   def assert_has_normal_string_keys(cert) do
-    keys = ["extensions", "fingerprint", "issuer", "not_after", "not_before", "serial_number", "signature_algorithm", "subject"]
+    keys = ["extensions", "fingerprint", "fingerprint_sha256", "issuer", "not_after", "not_before", "serial_number", "signature_algorithm", "subject"]
     Enum.each(keys, fn key ->
       assert Map.has_key?(cert, key)
     end)

@@ -46,6 +46,7 @@ defmodule EasySSL do
           subjectKeyIdentifier: "E6:61:14:4E:5A:4B:51:0C:4E:6C:5E:3C:79:61:65:D4:BD:64:94:BE"
         },
         fingerprint: "FA:BE:B5:9B:ED:C2:2B:42:7E:B1:45:C8:9A:8A:73:16:4A:A0:10:09",
+        fingerprint_sha256: "FA:BE:B5:9B:ED:C2:2B:42:7E:B1:45:C8:9A:8A:73:16:4A:A0:10:09:DE:AD:BE:EF:CA:FE:BA:BE",
         issuer: %{
           C: "US",
           CN: "Go Daddy Secure Certification Authority",
@@ -76,7 +77,8 @@ defmodule EasySSL do
     cert = :public_key.pkix_decode_cert(certificate_der, :otp) |> get_field(:tbsCertificate)
 
     serialized_certificate = %{}
-      |> Map.put(:fingerprint, certificate_der |> fingerprint_cert)
+      |> Map.put(:fingerprint, certificate_der |> fingerprint_cert(:sha))
+      |> Map.put(:fingerprint_sha256, certificate_der |> fingerprint_cert(:sha256))
       |> Map.put(:serial_number, cert |> get_field(:serialNumber) |> Integer.to_string(16))
       |> Map.put(:signature_algorithm, cert |> parse_signature_algo)
       |> Map.put(:subject, cert |> parse_rdnsequence(:subject))
@@ -197,8 +199,8 @@ defmodule EasySSL do
     elem(record, idx + 1)
   end
 
-  defp fingerprint_cert(certificate) do
-    :crypto.hash(:sha, certificate)
+  defp fingerprint_cert(certificate, algorithm) do
+    :crypto.hash(algorithm, certificate)
     |> Base.encode16
     |> String.to_charlist
     |> Enum.chunk_every(2, 2, :discard)
